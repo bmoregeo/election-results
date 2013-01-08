@@ -1,5 +1,5 @@
 ﻿/** @license
- | Version 10.1.1
+ | Version 10.1.2
  | Copyright 2012 Esri
  |
  | Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +14,11 @@
  | See the License for the specific language governing permissions and
  | limitations under the License.
  */
-var difference;
-var isOrientationChanged = false;
+var difference; //variable to store the difference of pods actual length and visible length
+var isOrientationChanged = false; //this variable is set to true when the orientation change event is fired
+var isInfo = false; //this variable is set to true when the info window is open
 
-//function to handle orientation change event handler
+//Handle orientation change event
 function orientationChanged() {
     map.infoWindow.hide();
     if (map) {
@@ -39,18 +40,17 @@ function orientationChanged() {
                 }, 500);
             }
             else {
-                FixWidthBottomPanel(); //function to set width of shortcut links in ipad orientation change
+                FixWidthBottomPanel(); //set width of shortcut links in i-pad orientation change
                 if (selectedGraphic) {
                     map.centerAt(selectedGraphic);
                     isOrientationChanged = false;
                 }
             }
-            //isOrientationChanged = false;
         }, timeout);
     }
 }
 
-//function to get the extent based on the mappoint
+//Get the extent based on the map-point for browser
 function GetBrowserMapExtent(mapPoint) {
     var width = map.extent.getWidth();
     var height = map.extent.getHeight();
@@ -61,6 +61,7 @@ function GetBrowserMapExtent(mapPoint) {
     return new esri.geometry.Extent(xmin, ymin, xmax, ymax, map.spatialReference);
 }
 
+//Get the extent based on the map-point for mobile
 function GetMobileExtent(mapPoint, extent) {
     var width = extent.getWidth();
     var height = extent.getHeight();
@@ -71,7 +72,7 @@ function GetMobileExtent(mapPoint, extent) {
     return new esri.geometry.Extent(xmin, ymin, xmax, ymax, map.spatialReference);
 }
 
-//function to get extent from mappoint and extent
+//Get extent from map-point and extent
 function CenterMapPoint(mapPoint, extent) {
     var width = extent.getWidth();
     var height = extent.getHeight();
@@ -82,7 +83,7 @@ function CenterMapPoint(mapPoint, extent) {
     return new esri.geometry.Extent(xmin, ymin, xmax, ymax, map.spatialReference);
 }
 
-// function to create charts in mobile device for orientation change
+//Resize charts in mobile device when orientation is changed
 function ResizeBarChart() {
     if (chartInfo) {
         RemoveChildren(dojo.byId("chartDiv"));
@@ -94,7 +95,7 @@ function ResizeBarChart() {
     }
 }
 
-//function to handle resize browser event handler
+//Handle resize browser event
 function resizeHandler() {
     if (map) {
         map.reposition();
@@ -107,7 +108,7 @@ function resizeHandler() {
     }
 }
 
-//function to set width of shortcut links in ipad orientation change
+//Set width of shortcut links in i-pad when orientation changed
 function FixWidthBottomPanel() {
     var width = ((dojo.window.getBox().w) / numberOfContests) - 5;
     if (isBrowser) {
@@ -130,7 +131,7 @@ function FixWidthBottomPanel() {
     }
 }
 
-//Function to get the query string value of the provided key if not found the function returns empty string
+//Get the query string value of the provided key
 function GetQuerystring(key) {
     var _default;
     if (_default == null) _default = "";
@@ -143,7 +144,7 @@ function GetQuerystring(key) {
         return qs[1];
 }
 
-//function to hide splash screen container
+//Hide splash screen container
 function HideSplashScreenMessage() {
     if (dojo.isIE < 9) {
         dojo.byId("divSplashScreenDialog").style.display = "none";
@@ -154,46 +155,46 @@ function HideSplashScreenMessage() {
     window.onkeydown = null;
 }
 
-//function to set height for splash screen
+//Set height for splash screen
 function SetHeightSplashScreen() {
     var height = (isMobileDevice) ? (dojo.window.getBox().h - 110) : (dojo.coords(dojo.byId('divSplashScreenDialog')).h - 80);
     dojo.byId('divSplashContent').style.height = (height + 10) + "px";
     CreateScrollbar(dojo.byId("divSplashContainer"), dojo.byId("divSplashContent"));
 }
 
-//function to set height and create scrollbar for election results
+//Set height and create scrollbar for election results container
 function SetHeightElectionResults() {
     var height = dojo.window.getBox().h;
     dojo.byId('divElectionContent').style.height = (height - 55) + "px";
     CreateScrollbar(dojo.byId("divElectionContainer"), dojo.byId("divElectionContent"));
 }
 
-//function to set height and create scrollbar for representative results
+//Set height and create scrollbar for representative results container
 function SetHeightRepresentativeResults() {
     var height = dojo.window.getBox().h;
     dojo.byId('divRepresentativeScrollContent').style.height = (height - 55) + "px";
     CreateScrollbar(dojo.byId("divRepresentativeDataScrollContainer"), dojo.byId("divRepresentativeScrollContent"));
 }
 
-//function to show progress indicator
+//Show progress indicator
 function ShowProgressIndicator(nodeId) {
     dojo.byId('divLoadingIndicator').style.display = "block";
 }
 
-//function to hide progress indicator
+//Hide progress indicator
 function HideProgressIndicator() {
     dojo.byId('divLoadingIndicator').style.display = "none";
 }
 
-//function to trim string
+//Trim the string
 String.prototype.trim = function () { return this.replace(/^\s+|\s+$/g, ''); }
 
-//Function to append ... for a string
+//Append '...' for a string
 String.prototype.trimString = function (len) {
     return (this.length > len) ? this.substring(0, len) + "..." : this;
 }
 
-//function to show sharing container
+//Show sharing container
 function ShowSharingContainer() {
     var cellheight = (isMobileDevice || isTablet) ? 79 : 57;
     if (dojo.hasClass('divShareContainer', "showContainerHeight")) {
@@ -213,16 +214,20 @@ function ShowSharingContainer() {
 
 var tinyUrl;
 
-//Function to open login page for facebook,tweet,email
+//Create the tiny URL with current extent and selected feature
 function ShareLink() {
     tinyUrl = null;
     var mapExtent = GetMapExtent();
 
     var url = esri.urlToObject(window.location.toString());
     var urlStr = encodeURI(url.path) + "?extent=" + mapExtent;
-    console.log(map.getLayer(precinctLayer.Key).getSelectedFeatures().length);
-    if (map.getLayer(precinctLayer.Key).getSelectedFeatures().length > 0) {
-        urlStr = encodeURI(url.path) + "?precinct=" + map.getLayer(precinctLayer.Key).getSelectedFeatures()[0].attributes[precinctLayer.PrecinctName]; ;
+    if (isInfo) {
+        urlStr = encodeURI(url.path) + "?extent=" + mapExtent + "?precinct=" + map.getLayer(precinctLayer.Key).getSelectedFeatures()[0].attributes[precinctLayer.PrecinctName] + "?SelectedLayer=" + currentSelectedLayer;
+    }
+    else {
+        if (map.getLayer(precinctLayer.Key).getSelectedFeatures().length > 0) {
+            urlStr = encodeURI(url.path) + "?extent=" + mapExtent + "?precinct=" + map.getLayer(precinctLayer.Key).getSelectedFeatures()[0].attributes[precinctLayer.PrecinctName];
+        }
     }
     url = dojo.string.substitute(mapSharingOptions.TinyURLServiceURL, [urlStr]);
 
@@ -249,7 +254,7 @@ function ShareLink() {
     }, 6000);
 }
 
-//Function to get map Extent
+//Get map Extent
 function GetMapExtent() {
     var extents = map.extent.xmin.toString() + ",";
     extents += map.extent.ymin.toString() + ",";
@@ -258,7 +263,7 @@ function GetMapExtent() {
     return (extents);
 }
 
-//Function to open login page for facebook,tweet,email
+//Open login page for facebook,tweet and open Email client with shared link for Email
 function Share(site) {
     if (dojo.hasClass('divShareContainer', "showContainerHeight")) {
         dojo.replaceClass("divShareContainer", "hideContainerHeight", "showContainerHeight");
@@ -277,7 +282,7 @@ function Share(site) {
     }
 }
 
-//function to locate using GPS
+//Display the current location of the user
 function ShowMyLocation() {
     navigator.geolocation.getCurrentPosition(
 		function (position) {
@@ -318,11 +323,16 @@ function ShowMyLocation() {
 		}, { timeout: 5000 });
 }
 
-//function to showe address container
+//Show address container with wipe-in animation
 function ShowLocateContainer() {
     dojo.byId("txtAddress").blur();
-    dojo.byId("tdSearchTitle").innerHTML = "Search Address";
-
+    dojo.byId("tdSearchTitle").innerHTML = "Search";
+    if (dojo.byId("tdsearchAddress").className == "tdSearchByAddress") {
+        dojo.byId("txtAddress").value = dojo.byId("txtAddress").getAttribute("defaultAddress");
+    }
+    else {
+        dojo.byId("txtAddress").value = dojo.byId("txtAddress").getAttribute("defaultPrecinct");
+    }
     if (isMobileDevice) {
         dojo.byId('divAddressContainer').style.display = "block";
         dojo.replaceClass("divAddressContent", "hideContainerHeight", "showContainerHeight");
@@ -333,9 +343,9 @@ function ShowLocateContainer() {
             dojo.byId('divAddressContent').style.height = '0px';
         }
         else {
+            dojo.byId("txtAddress").style.color = "gray";
             dojo.byId('divAddressContent').style.height = "300px";
             dojo.replaceClass("divAddressContent", "showContainerHeight", "hideContainerHeight");
-            SearchByAddress();
         }
     }
     if (dojo.hasClass('divShareContainer', "showContainerHeight")) {
@@ -343,10 +353,12 @@ function ShowLocateContainer() {
         dojo.byId('divShareContainer').style.height = '0px';
     }
     RemoveChildren(dojo.byId('tblAddressResults'));
-    SetHeightAddressResults();
+    setTimeout(function () {
+        SetHeightAddressResults();
+    }, 500);
 }
 
-//function to hide address container
+//Hide address container with wipe-out animation
 function HideAddressContainer() {
     if (isMobileDevice) {
         setTimeout(function () {
@@ -360,19 +372,17 @@ function HideAddressContainer() {
     }
 }
 
-//function to set height and create scrollbar for address results
+//Set height and create scrollbar for address results
 function SetHeightAddressResults() {
     var height = (isMobileDevice) ? dojo.window.getBox().h - 150 : dojo.coords(dojo.byId('divAddressContent')).h - ((isTablet) ? 150 : 120);
-    dojo.byId('divAddressScrollContent').style.height = height + "px";
+    dojo.byId('divAddressScrollContent').style.height = (height - 30) + "px";
     CreateScrollbar(dojo.byId("divAddressScrollContainer"), dojo.byId("divAddressScrollContent"));
     dojo.byId('divAddressScrollContainerscrollbar_handle').style.top = "0px";
 }
 
+//Set the styles for precinct button on-click
 function SearchByPrecinct() {
-    setTimeout(function () {
-        dojo.byId('txtAddress').focus();
-    }, 500);
-    dojo.byId("tdSearchTitle").innerHTML = "Search Precinct";
+    dojo.byId("txtAddress").style.color = "gray";
     RemoveChildren(dojo.byId('tblAddressResults'));
     RemoveScrollBar(dojo.byId("divAddressScrollContainer"));
     dojo.byId("txtAddress").value = dojo.byId("txtAddress").getAttribute("defaultPrecinct");
@@ -380,11 +390,9 @@ function SearchByPrecinct() {
     dojo.byId("tdSearchPrecinct").className = "tdSearchByPrecinct";
 }
 
+//Set the styles for Address button on-click
 function SearchByAddress() {
-    setTimeout(function () {
-        dojo.byId('txtAddress').focus();
-    }, 500);
-    dojo.byId("tdSearchTitle").innerHTML = "Search Address";
+    dojo.byId("txtAddress").style.color = "gray";
     RemoveChildren(dojo.byId('tblAddressResults'));
     RemoveScrollBar(dojo.byId("divAddressScrollContainer"));
     dojo.byId("txtAddress").value = dojo.byId("txtAddress").getAttribute("defaultAddress");
@@ -392,9 +400,9 @@ function SearchByAddress() {
     dojo.byId("tdSearchPrecinct").className = "tdSearchByUnSelectedPrecinct";
 }
 
-//Creating dynamic scrollbar within container for target content
-var scrolling = false; //flag to detect is touchmove event scrolling div
+var scrolling = false; //flag to detect is touch-move event scrolling div
 
+//Create dynamic scrollbar in container for target content
 function CreateScrollbar(container, content) {
     var yMax;
     var pxLeft, pxTop, xCoord, yCoord;
@@ -437,13 +445,12 @@ function CreateScrollbar(container, content) {
         scrollbar_track.style.display = 'block';
         scrollbar_handle.style.height = Math.max(this.content.offsetHeight * (this.content.offsetHeight / this.content.scrollHeight), 25) + 'px';
         yMax = this.content.offsetHeight - scrollbar_handle.offsetHeight;
-        yMax = yMax - 5; //for getting rounded bottom of handel
+        yMax = yMax - 5; //for getting rounded bottom of handle
         if (window.addEventListener) {
             content.addEventListener('DOMMouseScroll', ScrollDiv, false);
         }
 
         content.onmousewheel = function (evt) {
-            console.log(content.id);
             ScrollDiv(evt);
         }
     }
@@ -568,7 +575,7 @@ function CreateScrollbar(container, content) {
             y = pxTop - 10;
         }
 
-        //setting scrollbar handel
+        //setting scrollbar handle
         if (y > yMax) y = yMax // Limit vertical movement
         if (y < 0) y = 0 // Limit vertical movement
         scrollbar_handle.style.top = y + "px";
@@ -586,21 +593,21 @@ function CreateScrollbar(container, content) {
     //touch scrollbar end
 }
 
-//Function for refreshing address container div
+//Refresh container div
 function RemoveChildren(parentNode) {
     while (parentNode.hasChildNodes()) {
         parentNode.removeChild(parentNode.lastChild);
     }
 }
 
-//function to remove scroll bar
+//Remove scroll bar
 function RemoveScrollBar(container) {
     if (dojo.byId(container.id + 'scrollbar_track')) {
         container.removeChild(dojo.byId(container.id + 'scrollbar_track'));
     }
 }
 
-//function to show bottom panel
+//Show or hide bottom panel
 function ShowHideBottomPanel() {
     if (dojo.byId("imgToggle").getAttribute("state") == "maximized") {
         HideBottomPanel();
@@ -610,7 +617,7 @@ function ShowHideBottomPanel() {
     }
 }
 
-//function to hide bottom panel
+//Hide bottom panel
 function HideBottomPanel() {
     dojo.byId("divToggle").title = "Show results";
     dojo.byId("imgToggle").src = "images/up.png";
@@ -623,7 +630,7 @@ function HideBottomPanel() {
     dojo.replaceClass("divBottomPanelHeader", "hideHeaderContainer", "showHeaderContainer");
 }
 
-//function to show bottom panel
+//Show bottom panel
 function ShowBottomPanel() {
     dojo.byId("divToggle").title = "Hide results";
     dojo.byId("imgToggle").src = "images/down.png";
@@ -636,7 +643,7 @@ function ShowBottomPanel() {
     dojo.replaceClass("divBottomPanelHeader", "showHeaderContainer", "hideHeaderContainer");
 }
 
-//function to slide next info box in the bottom panel
+//Slide next pod in the bottom panel
 function SlideNext() {
     difference = dojo.byId("divElectionResultsContainer").offsetWidth - dojo.byId("divElectionResultsContent").offsetWidth;
     if (leftOffsetCarosuel > difference) {
@@ -649,7 +656,7 @@ function SlideNext() {
     }
 }
 
-//function to reset carosuel controls in the bottom panel
+//Reset carousel controls in the bottom panel
 function ResetSlideControls() {
     if (leftOffsetCarosuel > (dojo.byId("divElectionResultsContainer").offsetWidth - dojo.byId("divElectionResultsContent").offsetWidth + 4)) {
         dojo.byId('divSlideRight').style.display = "block";
@@ -670,7 +677,7 @@ function ResetSlideControls() {
     }
 }
 
-//function to slide previous info box in the bottom panel
+//Slide previous pod in the bottom panel
 function SlidePrev() {
     if (leftOffsetCarosuel < 0) {
         if (leftOffsetCarosuel > -(infoBoxWidth + 4)) {
@@ -690,7 +697,7 @@ function SlidePrev() {
     }
 }
 
-//function to slide to the selected info box in the bottom panel
+//Slide to the selected info pod in the bottom panel
 function SlideLeft(position) {
     leftOffsetCarosuel = -(position);
     if (position < 10) {
@@ -708,7 +715,7 @@ function SlideLeft(position) {
 var layerCount = 0;
 var layerResponseCount = 0;
 
-//function to show infowindow in the mobile interface
+//Show info window in the mobile
 function ShowDetails(mapPoint, name, county) {
     map.infoWindow.setTitle("");
     map.infoWindow.setContent("");
@@ -736,7 +743,7 @@ function ShowDetails(mapPoint, name, county) {
 }
 
 function FetchElectionResultInformation(index, precinctName) {
-    var queryTask = new esri.tasks.QueryTask(electionResultData[index].ServiceUrl);
+    var queryTask = new esri.tasks.QueryTask(electionResultData[index].ServiceURL);
     var query = new esri.tasks.Query();
     query.where = "NAME='" + precinctName + "'";
     queryTask.executeForIds(query, function (results) {
@@ -782,9 +789,10 @@ function ReturnElectionContenderContainer() {
 function HideInformationContainer() {
     map.infoWindow.hide();
     selectedGraphic = null;
+    isInfo = false;
 }
 
-//Funcction to get width of a control when text and font size are specified
+//Get width of a control when text and font size are specified
 String.prototype.getWidth = function (fontSize) {
     var test = document.createElement("span");
     document.body.appendChild(test);
@@ -798,7 +806,7 @@ String.prototype.getWidth = function (fontSize) {
     return w;
 }
 
-//function to show bar chart
+//Show bar chart
 function ShowBarChart(jsonValues, chartDiv, myLabelSeriesarray, myParallelLabelSeriesarray, winningParty, totalBallots) {
 
     if (!totalBallots) {
@@ -810,6 +818,7 @@ function ShowBarChart(jsonValues, chartDiv, myLabelSeriesarray, myParallelLabelS
 
     var barChart = new dojox.charting.Chart2D(chartDiv);
     if (isMobileDevice) {
+
         barChart.margins.l = 0;
         barChart.margins.t = 0;
         barChart.margins.r = 0;
@@ -825,8 +834,6 @@ function ShowBarChart(jsonValues, chartDiv, myLabelSeriesarray, myParallelLabelS
         barChart.addPlot("default", { type: "Bars", gap: 2, animate: true, maxBarSize: 15, margins: 0 });
         barChart.addPlot("other", { type: "Bars", gap: 2, vAxis: "other y", maxBarSize: 15, margins: 0 });
     }
-
-
     barChart.addAxis("x",
   { stroke: "white",
       includeZero: true,
@@ -836,7 +843,7 @@ function ShowBarChart(jsonValues, chartDiv, myLabelSeriesarray, myParallelLabelS
       minorLabels: false,
       fontColor: "white",
       microTicks: false,
-      //      from: 0, to: 100,
+      //      from: 0 to 100,
       min: 25, max: 100
   });
 
@@ -861,7 +868,7 @@ function ShowBarChart(jsonValues, chartDiv, myLabelSeriesarray, myParallelLabelS
 
     barChart.addSeries("Series 1", jsonValues);
     barChart.addSeries("Series 2", jsonValues, { plot: "other" });
-    var myTheme = dojox.charting.themes.ThreeD;
+    var myTheme = dojox.charting.themes.Desert;
     myTheme.chart.fill = "transparent";
     myTheme.plotarea.fill = "transparent";
     if (isBrowser) {
@@ -877,6 +884,12 @@ function ShowBarChart(jsonValues, chartDiv, myLabelSeriesarray, myParallelLabelS
     barChart.setTheme(myTheme);
 
     barChart.render();
+
+    for (var g = 0; g < chartDiv.childNodes.length; g++) {
+        chartDiv.childNodes[g].style.float = "left";
+    }
+
+
     dojo.query('text', chartDiv).forEach(dojo.hitch(this, function (node, idx, arr) {
         node.setAttribute("text-rendering", "initial");
         var y = node.getAttribute("y");
@@ -902,7 +915,7 @@ function ShowBarChart(jsonValues, chartDiv, myLabelSeriesarray, myParallelLabelS
     }
 }
 
-// function to show Pie Chart
+// Show Pie Chart
 function ShowPieChart(jsonValues, chartDiv, displayText) {
     var chartTable = dojo.create("table", { "style": "width:100%;height:100%;" }, chartDiv);
     var chartTbody = dojo.create("tbody", {}, chartTable);
@@ -925,7 +938,7 @@ function ShowPieChart(jsonValues, chartDiv, displayText) {
     });
 
     pieChart.addSeries("Series A", jsonValues);
-    var myTheme = dojox.charting.themes.ThreeD;
+    var myTheme = dojox.charting.themes.Desert;
     myTheme.chart.fill = "transparent";
     myTheme.plotarea.fill = "transparent";
     myTheme.series.fontColor = "white";
@@ -946,7 +959,7 @@ function ShowPieChart(jsonValues, chartDiv, displayText) {
     }
 }
 
-//Function to create Dynamic map services
+//Create Dynamic map services
 function CreateDynamicMapServiceLayer(layerId, layerURL) {
     var imageParams = new esri.layers.ImageParameters();
     var lastindex = layerURL.lastIndexOf('/');
@@ -974,7 +987,7 @@ function CreateDynamicMapServiceLayer(layerId, layerURL) {
     return dynamicMapService;
 }
 
-//function to show Dynamic map service
+//Show Dynamic map service
 function ShowDynamicMap(key) {
     for (var index in electionResultData) {
         if (map.getLayer(index)) {
@@ -984,11 +997,14 @@ function ShowDynamicMap(key) {
     map.getLayer(key).show();
 }
 
-//function to show infowindow in the browser and tablets
-function ShowInfoWindow(mapPoint, precintName) {
+//Show info window in the browser and tablets
+function ShowInfoWindow(mapPoint, precintName, carouselVisible) {
+    if (!isMobileDevice) {
+        isInfo = true;
+    }
     map.infoWindow.hide();
     selectedGraphic = null;
-    var queryTask = new esri.tasks.QueryTask(electionResultData[currentSelectedLayer].ServiceUrl);
+    var queryTask = new esri.tasks.QueryTask(electionResultData[currentSelectedLayer].ServiceURL);
     var query = new esri.tasks.Query();
     if (precintName) {
         query.where = "NAME='" + precintName + "'"
@@ -1007,7 +1023,9 @@ function ShowInfoWindow(mapPoint, precintName) {
             return;
         }
         dojo.byId("tdTitle").innerHTML = "Precinct - " + features.features[0].attributes[precinctLayer.PrecinctName];
-        map.setExtent(CenterMapPoint(mapPoint, features.features[0].geometry.getExtent().expand(4)));
+        if (!carouselVisible) {
+            map.setExtent(CenterMapPoint(mapPoint, features.features[0].geometry.getExtent().expand(4)));
+        }
         selectedGraphic = mapPoint;
 
         if (isBrowser) {
@@ -1039,21 +1057,50 @@ function ShowInfoWindow(mapPoint, precintName) {
         divChartContent.className = "divInfoWindowContent";
         PopulateChartData(electionResultData[currentSelectedLayer].ChartType, electionResultData[currentSelectedLayer].ChartData, electionResultData[currentSelectedLayer].PartyDetails, divChartContent, features, electionResultData[currentSelectedLayer].CandidateNames, electionResultData[currentSelectedLayer].TotalBallots);
         map.infoWindow.hide();
+        setTimeout(function () {
+            if (dojo.coords("divShareContainer").h > 0) {
+                ShareLink();
+            }
+        }, 500);
+
     }, function (err) {
         alert(messages.getElementsByTagName("unableToLocatePrecinct")[0].childNodes[0].nodeValue);
     });
 }
 
-//function to convert string to bool
+//Convert string to bool
 String.prototype.bool = function () {
     return (/^true$/i).test(this);
 };
 
-//function to trim string
-String.prototype.trim = function () { return this.replace(/^\s+|\s+$/g, ''); }
-
-//Function to append ... for a string
-String.prototype.trimString = function (len) {
-    return (this.length > len) ? this.substring(0, len) + "..." : this;
+//Clear default value for text box controls
+function ClearDefaultText(e) {
+    var target = window.event ? window.event.srcElement : e ? e.target : null;
+    if (!target) return;
+    target.style.color = "#FFF";
+    target.value = '';
 }
 
+//Set default value on blur
+function ReplaceDefaultText(e) {
+    var target = window.event ? window.event.srcElement : e ? e.target : null;
+    if (!target) return;
+
+    if (dojo.byId("tdSearchPrecinct").className == "tdSearchByPrecinct") {
+        ResetTargetValue(target, "defaultPrecinct", "gray");
+    }
+    else {
+        ResetTargetValue(target, "defaultAddress", "gray");
+    }
+}
+
+//Set changed value for address/Precinct
+function ResetTargetValue(target, title, color) {
+    if (target.value == "" && target.getAttribute(title)) {
+        target.value = target.title;
+        if (target.title == "") {
+            target.value = target.getAttribute(title);
+            target.style.color = color;
+        }
+    }
+}

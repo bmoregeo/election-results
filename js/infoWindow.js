@@ -1,5 +1,5 @@
 ﻿/** @license
- | Version 10.1.1
+ | Version 10.1.2
  | Copyright 2012 Esri
  |
  | Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
 dojo.provide("mobile.InfoWindow");
 dojo.require("esri.InfoWindowBase");
 
+dojo.ready(function () {
 dojo.declare("mobile.InfoWindow", [esri.InfoWindowBase], {
 
     constructor: function (parameters) {
@@ -130,4 +131,5 @@ dojo.declare("mobile.InfoWindow", [esri.InfoWindowBase], {
         this._title = this._content = this._eventConnections = this._imgDetails = null;
     }
 
+});
 });
